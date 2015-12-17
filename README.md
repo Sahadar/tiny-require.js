@@ -1,7 +1,7 @@
 tiny-require.js
 =========
 
-Tiny implementation of popular require.js library.
+Easy to use implementation of popular require.js library.
 
 ## License
 

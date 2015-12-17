@@ -1,0 +1,27 @@
+{
+  "name": "tiny-require.js",
+  "version": "0.0.1",
+  "description": "Tiny require.js implementation",
+  "author": "Wojciech Dłubacz <wojciech@dlubacz.pl> (http://sahadar.github.io)",
+  "keywords": [
+    "require.js",
+    "require",
+    "load",
+    "loader",
+    "lazy",
+    "packager",
+    "define",
+    "definer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Sahadar/tiny-require.js"
+  },
+  "devDependencies": {
+    "qunit": "~0.7.7"
+  },
+  "scripts": {
+    "test": "node ./test/testrunner.js"
+  },
+  "license": "MIT"
+}
