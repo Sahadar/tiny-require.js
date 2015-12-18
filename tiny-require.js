@@ -1,6 +1,8 @@
 (function(scope) {
 	'use strict';
 
+	var requiredScripts = {};
+
 	// Loader
 	function loader(fileName, callback) {
 		var xhttp = new XMLHttpRequest();
@@ -181,87 +183,102 @@
 	};
 
 	// require.js implementation
-	// function require(fileNames, callback) {
-	// 	var loaderConfig = self.config.loader;
-	// 	var environment = self.config.core.environment;
-	// 	var head = jQuery('head');
+	function require(fileNames, callback) {
+		if(typeof require.config === 'function') {
+			console.error('You have to specify config for require.js');
+			return;
+		}
+		var loaderConfig = require.config;
+		var environment = require.config.environment;
+		// var head = jQuery('head');
 
-	// 	createDeferred.map(fileNames, function(fileName) {
-	// 		var defer = createDeferred();
-	// 		var originName = fileName;
-	// 		var filenameSplit = fileName.split('/');
-	// 		var firstName = filenameSplit[0];
-	// 		var scriptDefer = null;
-	// 		var url = '';
+		createDeferred.map(fileNames, function(fileName) {
+			var defer = createDeferred();
+			var originName = fileName;
+			var filenameSplit = fileName.split('/');
+			var firstName = filenameSplit[0];
+			var scriptDefer = null;
+			var url = '';
 
-	// 		if(loaderConfig.paths[fileName]) {
-	// 			fileName = loaderConfig.paths[fileName];
-	// 		// first path name has translation
-	// 		} else if(loaderConfig.paths[firstName]) {
-	// 			fileName = loaderConfig.paths[firstName];
-	// 			filenameSplit.shift();
-	// 			fileName += '/'+filenameSplit.join('/');
-	// 		}
+			if(loaderConfig.paths[fileName]) {
+				fileName = loaderConfig.paths[fileName];
+			// first path name has translation
+			} else if(loaderConfig.paths[firstName]) {
+				fileName = loaderConfig.paths[firstName];
+				filenameSplit.shift();
+				fileName += '/'+filenameSplit.join('/');
+			}
 
-	// 		if(requiredScripts[fileName]) {
-	// 			scriptDefer = requiredScripts[fileName].defer;
-	// 			scriptDefer.promise.then(function() {
-	// 				defer.resolve(fileName);
-	// 			});
-	// 		} else {
-	// 			scriptDefer = createDeferred();
-	// 			requiredScripts[fileName] = {
-	// 				defer : scriptDefer,
-	// 				result : null
-	// 			};
+			if(requiredScripts[fileName]) {
+				scriptDefer = requiredScripts[fileName].defer;
+				scriptDefer.promise.then(function() {
+					defer.resolve(fileName);
+				});
+			} else {
+				scriptDefer = createDeferred();
+				requiredScripts[fileName] = {
+					defer : scriptDefer,
+					result : null
+				};
 
-	// 			// download content - in dev mode, in prod wait for "define"
-	// 			if(environment === 'dev' || loaderConfig.pathPackages.indexOf(firstName) >= 0) {
-					
-	// 				if(environment !== 'dev' && fileName.match(/\/main$/g)) {
-	// 					url = self.config.core.baseUrl+fileName.replace(/\/main$/g, '')+'.js?'+self.config.core.tag;
-	// 				} else {
-	// 					url = self.config.core.baseUrl+fileName+'.js?'+self.config.core.tag;
-	// 				}
+				// download content - in dev mode, in prod wait for "define"
+				if(environment === 'dev' || loaderConfig.pathPackages.indexOf(firstName) >= 0) {
+					if(environment !== 'dev' && fileName.match(/\/main$/g)) {
+						url = require.config.baseUrl+fileName.replace(/\/main$/g, '')+'.js?'+require.config.tag;
+					} else {
+						url = require.config.baseUrl+fileName+'.js?v='+require.config.tag;
+					}
 
-	// 				jQuery.ajax({
-	// 					url : url,
-	// 					dataType : 'html',
-	// 					success : function(script) {
-	// 						lastLoadedScript = fileName;
-	// 						head.append('<script>'+script+'</script>');
+					loader(url, function(script) {
+						console.log('script: ', script);
+					});
+					// jQuery.ajax({
+					// 	url : url,
+					// 	dataType : 'html',
+					// 	success : function(script) {
+					// 		lastLoadedScript = fileName;
+					// 		head.append('<script>'+script+'</script>');
 
-	// 						if(loaderConfig.shim[originName]) {
-	// 							requiredScripts[fileName].result = window[loaderConfig.shim[originName].exports];
-	// 							scriptDefer.resolve();
-	// 						}
-	// 						scriptDefer.promise.then(function() {
-	// 							defer.resolve(fileName);
-	// 						});
-	// 					}
-	// 				});
-	// 			} else {
-	// 				scriptDefer.promise.then(function() {
-	// 					defer.resolve(fileName);
-	// 				});
-	// 			}
-	// 		}
+					// 		if(loaderConfig.shim[originName]) {
+					// 			requiredScripts[fileName].result = window[loaderConfig.shim[originName].exports];
+					// 			scriptDefer.resolve();
+					// 		}
+					// 		scriptDefer.promise.then(function() {
+					// 			defer.resolve(fileName);
+					// 		});
+					// 	}
+					// });
+				} else {
+					scriptDefer.promise.then(function() {
+						defer.resolve(fileName);
+					});
+				}
+			}
 
-	// 		return defer.promise;
-	// 	}).then(function(fileNames) {
-	// 		var results = [];
+			return defer.promise;
+		}).then(function(fileNames) {
+			console.log('fileNames: ', fileNames);
+			// var results = [];
 
-	// 		// console.log('fileNames: ', fileNames);
-	// 		fileNames.forEach(function(fileName) {
-	// 			// console.log('result: ', fileName, requiredScripts[fileName].result);
-	// 			results.push(requiredScripts[fileName].result);
-	// 		});
+			// // console.log('fileNames: ', fileNames);
+			// fileNames.forEach(function(fileName) {
+			// 	// console.log('result: ', fileName, requiredScripts[fileName].result);
+			// 	results.push(requiredScripts[fileName].result);
+			// });
 
-	// 		callback.apply(window, results);
-	// 	});
-	// }
+			// callback.apply(window, results);
+		});
+	}
+	// this method will be replaced by its argument
+	require.config = function(config) {
+		require.config = config;
+	};
+	require.cleanUp = function() {
+		requiredScripts = {};
+		console.log('cleanUp');
+	};
 
-	// function define() {
+	function define() {
 	// 	var environment = self.config.core.environment;
 	// 	var fileName = (environment === 'dev') ? lastLoadedScript : arguments[0];
 	// 	var requires = (environment === 'dev') ? arguments[0] : arguments[1];
@@ -298,7 +315,7 @@
 	// 		requiredScripts[fileName].result = callback;
 	// 		scriptDefer.resolve();
 	// 	}
-	// }
+	}
 
 	if(typeof window === 'object') {
 		window.require = require;

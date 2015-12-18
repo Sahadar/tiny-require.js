@@ -117,6 +117,9 @@
 		"test",
 		"asyncTest",
 		"define",
+		"require",
+		"QUnit",
+		"start",
 		
 		//nodejs
 		"global",
