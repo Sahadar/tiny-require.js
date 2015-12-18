@@ -7,7 +7,9 @@
 		readyRegExp = navigator.platform === 'PLAYSTATION 3' ?
               /^complete$/ : /^(complete|loaded)$/;
 
+	// 
 	// methods below are inspired by require.js native library's code
+	// 
 	function createNode(url) {
 		var node = document.createElement('script');
 		node.type = 'text/javascript';
@@ -60,17 +62,6 @@
 
 		return node;
 	}
-	// function loader(fileName, callback) {
-	// 	var xhttp = new XMLHttpRequest();
-
-	// 	xhttp.onreadystatechange = function() {
-	// 		if (xhttp.readyState === 4 && xhttp.status === 200) {
-	// 			callback(xhttp.responseText);
-	// 		}
-	// 	};
-	// 	xhttp.open("GET", fileName, true);
-	// 	xhttp.send();
-	// }
 
 	// Minimalistic deferred taken from: https://github.com/Sahadar/tiny-deferred.js
 	// Copied here because tiny-require shouldn't have any dependencies to load
@@ -239,7 +230,9 @@
 		return mapDefer.promise;
 	};
 
-	// require.js implementation
+	// 
+	// tiny-require.js implementation
+	// 
 	function require(fileNames, callback) {
 		if(typeof require.config === 'function') {
 			console.error('You have to specify config for require.js');
@@ -247,7 +240,6 @@
 		}
 		var loaderConfig = require.config;
 		var environment = require.config.environment;
-		// var head = jQuery('head');
 
 		createDeferred.map(fileNames, function(fileName) {
 			var defer = createDeferred();
@@ -314,6 +306,7 @@
 			callback.apply(window, results);
 		});
 	}
+	
 	// this method will be replaced by its argument
 	require.config = function(config) {
 		require.config = config;
