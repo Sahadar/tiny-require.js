@@ -120,6 +120,7 @@
 		"require",
 		"QUnit",
 		"start",
+		"deepEqual",
 		
 		//nodejs
 		"global",

@@ -1,22 +1,79 @@
 (function(scope) {
 	'use strict';
 
-	var requiredScripts = {};
+	var requiredScripts = {},
+		awaitingModule = null,
+		headNode = document.getElementsByTagName('head')[0],
+		readyRegExp = navigator.platform === 'PLAYSTATION 3' ?
+              /^complete$/ : /^(complete|loaded)$/;
 
-	// Loader
-	function loader(fileName, callback) {
-		var xhttp = new XMLHttpRequest();
+	// methods below are inspired by require.js native library's code
+	function createNode(url) {
+		var node = document.createElement('script');
+		node.type = 'text/javascript';
+		node.charset = 'utf-8';
+		node.async = true;
 
-		xhttp.onreadystatechange = function() {
-			if (xhttp.readyState === 4 && xhttp.status === 200) {
-				callback(xhttp.responseText);
-			}
-		};
-		xhttp.open("GET", fileName, true);
-		xhttp.send();
+		return node;
 	}
+	function getScriptData(evt) {
+		var node = evt.currentTarget || evt.srcElement;
+
+		return {
+			node: node,
+			id: node && node.getAttribute('data-requiremodule')
+		};
+	}
+	function onScriptError(err) {
+		console.error(err);
+	}
+	function onScriptLoad(evt) {
+		var node = evt.currentTarget || evt.srcElement;
+
+		if (evt.type === 'load' ||
+				// check for PS3
+				(readyRegExp.test((evt.currentTarget || evt.srcElement).readyState))) {
+
+			node.removeEventListener(name, onScriptLoad, false);
+			node.removeEventListener(name, onScriptError, false);
+
+			var data = getScriptData(evt);
+
+			if(!awaitingModule) {
+				console.error('No waiting module');
+				return;
+			} else {
+				awaitingModule.args.unshift(data.id);
+				define.apply(define, awaitingModule.args);
+			}
+		}
+	}
+	function loader(moduleName, url) {
+		var node = createNode(url);
+
+		node.setAttribute('data-requiremodule', moduleName);
+		node.addEventListener('load', onScriptLoad, false);
+		node.addEventListener('error', onScriptError, false);
+		node.src = url;
+
+		headNode.appendChild(node);
+
+		return node;
+	}
+	// function loader(fileName, callback) {
+	// 	var xhttp = new XMLHttpRequest();
+
+	// 	xhttp.onreadystatechange = function() {
+	// 		if (xhttp.readyState === 4 && xhttp.status === 200) {
+	// 			callback(xhttp.responseText);
+	// 		}
+	// 	};
+	// 	xhttp.open("GET", fileName, true);
+	// 	xhttp.send();
+	// }
+
 	// Minimalistic deferred taken from: https://github.com/Sahadar/tiny-deferred.js
-	// Didn't want to have any dependencies
+	// Copied here because tiny-require shouldn't have any dependencies to load
 	// I will not force anybody to use this deferred
 	function isPromise(obj) {
 		return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';
@@ -229,25 +286,16 @@
 						url = require.config.baseUrl+fileName+'.js?v='+require.config.tag;
 					}
 
-					loader(url, function(script) {
-						console.log('script: ', script);
-					});
-					// jQuery.ajax({
-					// 	url : url,
-					// 	dataType : 'html',
-					// 	success : function(script) {
-					// 		lastLoadedScript = fileName;
-					// 		head.append('<script>'+script+'</script>');
+					loader(fileName, url);
 
-					// 		if(loaderConfig.shim[originName]) {
-					// 			requiredScripts[fileName].result = window[loaderConfig.shim[originName].exports];
-					// 			scriptDefer.resolve();
-					// 		}
-					// 		scriptDefer.promise.then(function() {
-					// 			defer.resolve(fileName);
-					// 		});
-					// 	}
-					// });
+					if(loaderConfig.shim && loaderConfig.shim[originName]) {
+						requiredScripts[fileName].result = window[loaderConfig.shim[originName].exports];
+						scriptDefer.resolve();
+					}
+
+					scriptDefer.promise.then(function() {
+						defer.resolve(fileName);
+					});
 				} else {
 					scriptDefer.promise.then(function() {
 						defer.resolve(fileName);
@@ -257,16 +305,13 @@
 
 			return defer.promise;
 		}).then(function(fileNames) {
-			console.log('fileNames: ', fileNames);
-			// var results = [];
+			var results = [];
 
-			// // console.log('fileNames: ', fileNames);
-			// fileNames.forEach(function(fileName) {
-			// 	// console.log('result: ', fileName, requiredScripts[fileName].result);
-			// 	results.push(requiredScripts[fileName].result);
-			// });
+			fileNames.forEach(function(fileName) {
+				results.push(requiredScripts[fileName].result);
+			});
 
-			// callback.apply(window, results);
+			callback.apply(window, results);
 		});
 	}
 	// this method will be replaced by its argument
@@ -275,46 +320,53 @@
 	};
 	require.cleanUp = function() {
 		requiredScripts = {};
-		console.log('cleanUp');
 	};
 
-	function define() {
-	// 	var environment = self.config.core.environment;
-	// 	var fileName = (environment === 'dev') ? lastLoadedScript : arguments[0];
-	// 	var requires = (environment === 'dev') ? arguments[0] : arguments[1];
-	// 	var callback = (environment === 'dev') ? arguments[1] : arguments[2];
-	// 	var requireResults = [];
-	// 	var scriptDefer = null;
+	function define(fileName, requires, callback) {
+		var environment = require.config.environment;
 
-	// 	// no requires
-	// 	if(typeof callback === 'undefined') {
-	// 		callback = requires;
-	// 		requires = [];
-	// 	}
+		fileName = (typeof arguments[0] === 'string') ? arguments[0] : null;
+		var requireResults = [];
+		var scriptDefer = null;
 
-	// 	if(requiredScripts[fileName]) {
-	// 		scriptDefer = requiredScripts[fileName].defer;
-	// 	} else {
-	// 		scriptDefer = createDeferred();
-	// 		requiredScripts[fileName] = {
-	// 			defer : scriptDefer,
-	// 			result : null
-	// 		};
-	// 	}
+		if(!fileName) {
+			awaitingModule = {
+				args : Array.prototype.slice.call(arguments)
+			};
+			return;
+		} else {
+			awaitingModule = null;
+		}
 
-	// 	if(requires.length > 0) {
-	// 		require(requires, function() {
-	// 			requiredScripts[fileName].result = callback.apply(window, arguments);
+		// no requires
+		if(typeof callback === 'undefined') {
+			callback = requires;
+			requires = [];
+		}
 
-	// 			scriptDefer.resolve();
-	// 		});
-	// 	} else if(typeof callback === 'function') {
-	// 		requiredScripts[fileName].result = callback();
-	// 		scriptDefer.resolve();
-	// 	} else {
-	// 		requiredScripts[fileName].result = callback;
-	// 		scriptDefer.resolve();
-	// 	}
+		if(requiredScripts[fileName]) {
+			scriptDefer = requiredScripts[fileName].defer;
+		} else {
+			scriptDefer = createDeferred();
+			requiredScripts[fileName] = {
+				defer : scriptDefer,
+				result : null
+			};
+		}
+
+		if(requires.length > 0) {
+			require(requires, function() {
+				requiredScripts[fileName].result = callback.apply(window, arguments);
+
+				scriptDefer.resolve();
+			});
+		} else if(typeof callback === 'function') {
+			requiredScripts[fileName].result = callback();
+			scriptDefer.resolve();
+		} else {
+			requiredScripts[fileName].result = callback;
+			scriptDefer.resolve();
+		}
 	}
 
 	if(typeof window === 'object') {
