@@ -1,6 +1,6 @@
 {
-  "name": "tiny-require.js",
-  "version": "0.0.1",
+  "name": "tiny-require",
+  "version": "0.1.0",
   "description": "Tiny require.js implementation",
   "author": "Wojciech Dłubacz <wojciech@dlubacz.pl> (http://sahadar.github.io)",
   "keywords": [
