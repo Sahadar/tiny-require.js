@@ -5,7 +5,7 @@ Tiny and easy to use implementation of popular require.js library.
 
 Implementation originally inspired by James Burke's [requirejs](https://github.com/jrburke/requirejs)
 
-[NPM tiny-deferred.js link](https://npmjs.org/package/tiny-deferred.js)
+[NPM tiny-require link](https://npmjs.org/package/tiny-require)
 
 ## Installation
 * download from Github
