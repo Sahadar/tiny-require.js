@@ -18,7 +18,8 @@
     "url": "git://github.com/Sahadar/tiny-require.js"
   },
   "devDependencies": {
-    "qunit": "~0.7.7"
+    "qunit": "~0.7.7",
+    "qunit-phantomjs-runner": "~2.1.0"
   },
   "scripts": {
     "test": "phantomjs node_modules/qunit-phantomjs-runner/runner.js test/web/tiny-require.html"
