@@ -11,7 +11,7 @@ Easy to use implementation of popular require.js library.
 
 Documentation will be improved soon but for now you can:
 
-[Check out tests file](https://github.com/Sahadar/tiny-deferred.js/blob/master/test/test.js)
+[Check out tests file](https://github.com/Sahadar/tiny-require.js/blob/master/test/test.js)
 
 ## License
 
