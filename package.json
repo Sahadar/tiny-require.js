@@ -21,7 +21,7 @@
     "qunit": "~0.7.7"
   },
   "scripts": {
-    "test": "node ./test/testrunner.js"
+    "test": "phantomjs node_modules/qunit-phantomjs-runner/runner.js test/web/tiny-require.html"
   },
   "license": "MIT"
 }
