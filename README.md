@@ -9,7 +9,7 @@ Tiny and easy to use implementation of popular require.js library.
 
 Implementation originally inspired by James Burke's [requirejs](https://github.com/jrburke/requirejs)
 
-*Why another require library?* Because original requirejs is oversized.
+**Why another require library?** Because original requirejs is oversized.
 
 [NPM tiny-require link](https://npmjs.org/package/tiny-require)
 
